@@ -1,0 +1,80 @@
+local run_service = game:GetService("RunService")
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+
+local flags = {
+    ["toggle_hrp_size_enabled"] = false, 
+    ["hrp_size"] = 20, 
+    ["toggle_hrp_transparency"] = false, 
+}
+
+local function toggleHRPSize(state)
+    flags["toggle_hrp_size_enabled"] = state
+    local size = flags["hrp_size"]
+    local Client = Players.LocalPlayer
+
+    for _, Player in pairs(Players:GetPlayers()) do
+        if Player ~= Client and Player.Character then
+            local HRP = Player.Character:FindFirstChild("HumanoidRootPart")
+            if HRP then
+                if state then
+                    HRP.Size = Vector3.new(size, size, size) 
+                    HRP.CanCollide = false
+                else
+                    HRP.Size = Vector3.new(2, 2, 1) 
+                    HRP.CanCollide = true
+                    HRP.Transparency = 0
+                end
+            end
+        end
+    end
+end
+
+
+local function toggleHRPTransparency(state)
+    flags["toggle_hrp_transparency"] = state
+    local transparency = state and 1 or 0
+    local Client = Players.LocalPlayer
+
+    for _, Player in pairs(Players:GetPlayers()) do
+        if Player ~= Client and Player.Character then
+            local HRP = Player.Character:FindFirstChild("HumanoidRootPart")
+            if HRP then
+                HRP.Transparency = transparency
+            end
+        end
+    end
+end
+
+UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
+    if gameProcessedEvent then return end
+
+    if input.KeyCode == Enum.KeyCode.T then
+        local newState = not flags["toggle_hrp_size_enabled"]
+        toggleHRPSize(newState)
+        print("HRP size toggle state:", newState)
+    elseif input.KeyCode == Enum.KeyCode.G then
+        local newState = not flags["toggle_hrp_transparency"]
+        toggleHRPTransparency(newState)
+        print("HRP transparency toggle state:", newState)
+    end
+end)
+
+run_service.Heartbeat:Connect(function()
+    if flags["toggle_hrp_size_enabled"] then
+        local size = flags["hrp_size"]
+        local Client = Players.LocalPlayer
+        for _, Player in pairs(Players:GetPlayers()) do
+            if Player ~= Client and Player.Character then
+                local HRP = Player.Character:FindFirstChild("HumanoidRootPart")
+                if HRP then
+                    HRP.Size = Vector3.new(size, size, size)
+                    HRP.CanCollide = false
+                    if flags["toggle_hrp_transparency"] then
+                        HRP.Transparency = 1
+                    end
+                end
+            end
+        end
+    end
+end)
